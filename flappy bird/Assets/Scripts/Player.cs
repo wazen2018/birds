@@ -7,7 +7,7 @@ public class Player : MonoBehaviour {
 
     public Rigidbody2D rigiBird;
     public Animator ani;
-    public float force=200f;
+    public float speed=5f;
     private bool death = false;
 
     public delegate void DeathNotify();
@@ -17,8 +17,11 @@ public class Player : MonoBehaviour {
 
     public UnityAction<int>  onSorce;
 
-	// Use this for initialization
-	void Start () {
+    public GameObject BulletTemplate;
+    public float FireRate=10;//开火间隔/子弹间隔
+
+    // Use this for initialization
+    void Start () {
         this.ani = GetComponent<Animator>();
         this.Idle();
         initpos = this.transform.position;
@@ -31,17 +34,38 @@ public class Player : MonoBehaviour {
         this.Idle();
         
     }
-	
+
+    float firetime = 0;
 	// Update is called once per frame
 	void Update () {
         if (this.death)
             return;
-        if (Input.GetMouseButtonDown(0))
+
+        firetime += Time.deltaTime;
+
+        Vector2 pos = this.transform.position;
+        pos.x += Input.GetAxis("Horizontal")* Time.deltaTime* speed;
+        pos.y += Input.GetAxis("Vertical") * Time.deltaTime*speed;
+        this.transform.position = pos;
+
+        if (Input.GetButton("Fire1"))
         {
-            rigiBird.velocity = Vector2.zero;
-            rigiBird.AddForce(new Vector2(0, force),ForceMode2D.Force);
+            this.fire();
         }
-	}
+    }
+    public void fire()
+    {
+        if (FireRate <= 0)
+            FireRate = 1;
+        
+        if (firetime > 1f/FireRate)
+        {
+            GameObject go = Instantiate(BulletTemplate);
+            go.transform.position = this.transform.position;
+            firetime = 0;
+        }
+       
+    }
 
     public void Idle()
     {
@@ -63,8 +87,8 @@ public class Player : MonoBehaviour {
         this.ani.SetTrigger("Fly");
         this.rigiBird.simulated = true;
         this.ani.applyRootMotion = true;
-        if (this.death == false)
-            this.death = false;
+        //if (this.death == false)
+        //    this.death = false;
          this.ani.updateMode = AnimatorUpdateMode.AnimatePhysics;
         
 
@@ -96,7 +120,7 @@ public class Player : MonoBehaviour {
 
         }else
         {
-            this.Die();
+         //   this.Die();
         }
         
     }
@@ -111,7 +135,7 @@ public class Player : MonoBehaviour {
         }
         else
         {
-            this.Die();
+          //  this.Die();
         }
 
     }
